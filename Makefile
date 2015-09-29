@@ -1,0 +1,4 @@
+
+b:
+	python bwt.py
+
