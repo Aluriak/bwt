@@ -168,7 +168,7 @@ def find(query, bwt, suffix_array=None, *, ranks=None, counts=None, alphabet=Non
     # init
     start, stop = 0, len(bwt) - 1
 
-    for target in reversed(query):
+    for idxtarget, target in enumerate(reversed(query)):
         # find the minimal possible char in bwt
         idmin = start
         while bwt[idmin] != target and idmin <= stop: idmin += 1
@@ -179,22 +179,24 @@ def find(query, bwt, suffix_array=None, *, ranks=None, counts=None, alphabet=Non
         if idmax - idmin >= 0:
             start = next_line(target, ranks[idmin])
             stop  = next_line(target, ranks[idmax])
-            if suffix_array is not None:
-                pass  # TODO: implement the positions yielding
         else:  # nothing found: stop the search here
             break
     # return the number of occurences only if all occurences are not yet yielded
     if suffix_array is None:
         return stop - start + 1
+    else:
+        return (suffix_array[pos] for pos in range(start, stop+1))
 
 
 if __name__ == '__main__':
 
     TXT = 'CATGTATT'
     BWT = tuple(transform(TXT))
+    SA  = generate_suffix_array(TXT)
     assert TXT == construct_text(BWT)
     print('Text:', construct_text(BWT))
     print('BWT :', BWT)
     for query in ('T', 'AT', 'CAT'):
-        print(query.rjust(4) + ':', find(query, BWT), 'occurences')
+        req = tuple(find(query, BWT, suffix_array=SA))
+        print(query.rjust(4) + ':', req, 'occurences')
 
